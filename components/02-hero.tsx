@@ -5,6 +5,7 @@ import { MapPin, Star, Cpu, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { WhatsAppIcon } from "@/components/icons"
 import { useLeadModal } from "./13-lead-modal"
+import heroBackground from "@/public/radiologia-odontologica-maraba.jpg"
 
 const trustBadges = [
   { icon: MapPin, text: "2 unidades em Marabá" },
@@ -22,7 +23,7 @@ export function Hero() {
       <div className="absolute inset-0 z-0">
         {/* Background image */}
         <Image
-          src="/radiologia-odontologica-maraba.jpg"
+          src={heroBackground}
           alt="Profissional em estação de radiologia odontológica da RX Digital em Marabá"
           fill
           className="object-cover"
