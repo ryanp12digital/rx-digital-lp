@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button"
 
 const locations = [
   {
-    name: "Unidade Novo Horizonte",
-    address: "Av. Tocantins, 611 - B - Novo Horizonte",
+    name: "Unidade Novo Horizonte (disponível Tomografia)",
+    address: "Av. Tocantins, 611 - B - Novo Horizonte, Marabá - PA",
     city: "Marabá - PA, 68503-660",
     hours: "Segunda a Sexta: 8h às 19h | Sábado: 8h às 12h",
     phone: "(94) 99160-8181",
@@ -23,9 +23,9 @@ const locations = [
     ],
   },
   {
-    name: "Unidade Nova Marabá",
+    name: "Unidade Nova Marabá - Shopping Verdes Mares",
     subtitle: "Shopping Verdes Mares",
-    address: "Folha 27 quadra especial - Nova",
+    address: "Folha 27 quadra especial - Nova - Nova Marabá, Marabá - PA",
     city: "Nova Marabá, Marabá - PA, 68509-100",
     hours: "Segunda a Sexta: 8h às 19h | Sábado: 8h às 12h",
     phone: "(94) 99155-8181",

@@ -6,12 +6,16 @@ import { MapPin, Phone, Instagram } from "lucide-react"
 
 const units = [
   {
-    name: "Unidade Novo Horizonte",
+    name: "Unidade Novo Horizonte (disponível Tomografia)",
     address: "Av. Tocantins, 611 - B - Novo Horizonte, Marabá - PA",
+    mapLink:
+      "https://www.google.com/search?q=rx+digital+maraba&oq=rx+di&gs_lcrp=EgZjaHJvbWUqDggAEEUYJxg7GIAEGIoFMg4IABBFGCcYOxiABBiKBTIGCAEQRRg5MggIAhBFGCcYOzIJCAMQRRg7GIAEMgcIBBAAGIAEMgYIBRBFGDwyBggGEEUYPDIGCAcQRRg80gEHOTM5ajBqN6gCALACAA&sourceid=chrome&ie=UTF-8&lqi=ChFyeCBkaWdpdGFsIG1hcmFiYUix7f_cubeAgAhaHRAAEAEYABgBGAIiEXJ4IGRpZ2l0YWwgbWFyYWJhkgEQZGVudGFsX3JhZGlvbG9neQ#rlimm=6611756993345909540",
   },
   {
-    name: "Unidade Nova Marabá",
+    name: "Unidade Nova Marabá - Shopping Verdes Mares",
     address: "Folha 27 quadra especial - Nova - Nova Marabá, Marabá - PA",
+    mapLink:
+      "https://www.google.com/search?q=rx+digital+maraba&oq=rx+di&gs_lcrp=EgZjaHJvbWUqDggAEEUYJxg7GIAEGIoFMg4IABBFGCcYOxiABBiKBTIGCAEQRRg5MggIAhBFGCcYOzIJCAMQRRg7GIAEMgcIBBAAGIAEMgYIBRBFGDwyBggGEEUYPDIGCAcQRRg80gEHOTM5ajBqN6gCALACAA&sourceid=chrome&ie=UTF-8&lqi=ChFyeCBkaWdpdGFsIG1hcmFiYUiu14Pzl72AgAhaHRAAEAEYABgBGAIiEXJ4IGRpZ2l0YWwgbWFyYWJhkgENZGVudGFsX2NsaW5pYw#rlimm=13355660969448100370",
   },
 ]
 
@@ -46,7 +50,14 @@ export function Footer() {
                 <div key={index} className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-background">{unit.name}</p>
+                    <a
+                      href={unit.mapLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-background hover:text-accent transition-colors"
+                    >
+                      {unit.name}
+                    </a>
                     <p className="text-xs text-background/70">{unit.address}</p>
                   </div>
                 </div>
@@ -59,7 +70,10 @@ export function Footer() {
             <h3 className="font-semibold text-background mb-4">Contato</h3>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-background/50 mb-1">Novo Horizonte</p>
+                <p className="mb-1 flex items-center gap-2 text-xs text-background/50">
+                  <span>Novo Horizonte</span>
+                  <span>Disponivel Turmografia</span>
+                </p>
                 <a 
                   href="tel:+5594991608181" 
                   className="flex items-center gap-2 text-background/70 hover:text-white transition-colors"

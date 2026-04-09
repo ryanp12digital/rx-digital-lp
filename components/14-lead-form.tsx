@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { WhatsAppIcon } from "@/components/icons"
 
 interface LeadFormProps {
@@ -34,11 +35,12 @@ export function LeadForm({
 }: LeadFormProps) {
   const [name, setName] = useState("")
   const [whatsapp, setWhatsapp] = useState("")
+  const [consentChecked, setConsentChecked] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errors, setErrors] = useState<{ name?: string; whatsapp?: string }>({})
+  const [errors, setErrors] = useState<{ name?: string; whatsapp?: string; consent?: string }>({})
 
   const validateForm = () => {
-    const newErrors: { name?: string; whatsapp?: string } = {}
+    const newErrors: { name?: string; whatsapp?: string; consent?: string } = {}
     
     if (!name.trim()) {
       newErrors.name = "Por favor, informe seu nome"
@@ -49,6 +51,10 @@ export function LeadForm({
       newErrors.whatsapp = "Por favor, informe seu WhatsApp"
     } else if (cleanNumber.length < 10 || cleanNumber.length > 11) {
       newErrors.whatsapp = "WhatsApp inválido"
+    }
+
+    if (showLgpd && !consentChecked) {
+      newErrors.consent = "Você precisa autorizar o uso dos dados para continuar"
     }
     
     setErrors(newErrors)
@@ -168,9 +174,32 @@ export function LeadForm({
       </Button>
       
       {showLgpd && (
-        <p className="text-xs text-muted-foreground text-center leading-relaxed">
-          Seus dados estão seguros e serão usados apenas para este contato.
-        </p>
+        <div className="space-y-2">
+          <div className="flex items-start gap-3 rounded-xl bg-muted/50 px-3 py-2.5">
+            <Checkbox
+              id={`consent-${variant}`}
+              checked={consentChecked}
+              onCheckedChange={(checked) => {
+                const isChecked = checked === true
+                setConsentChecked(isChecked)
+                if (isChecked && errors.consent) {
+                  setErrors((prev) => ({ ...prev, consent: undefined }))
+                }
+              }}
+              disabled={isSubmitting}
+              className="mt-0.5 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+            />
+            <label
+              htmlFor={`consent-${variant}`}
+              className="text-sm leading-relaxed text-muted-foreground cursor-pointer"
+            >
+              Autorizo o uso dos meus dados para contato, conforme os termos de privacidade.
+            </label>
+          </div>
+          {errors.consent && (
+            <p className="text-sm text-destructive">{errors.consent}</p>
+          )}
+        </div>
       )}
     </form>
   )

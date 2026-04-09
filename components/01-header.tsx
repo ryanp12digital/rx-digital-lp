@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { WhatsAppIcon } from "@/components/icons"
 import { useLeadModal } from "./13-lead-modal"
 import { cn } from "@/lib/utils"
+import { isWithinBusinessHours } from "@/lib/business-hours"
 
 const navLinks = [
   { href: "#servicos", label: "Serviços" },
@@ -18,11 +19,12 @@ const navLinks = [
 ]
 
 const WHATSAPP_LINK = "https://wa.me/5594991608181?text=Ol%C3%A1!%20Gostaria%20de%20agendar%20um%20exame%20na%20RX%20Digital."
-const UNIDADE_ONLINE_LINK = "https://app.lauduz.com/rxdigital"
+const PHONE_LINK = "tel:+5594991608181"
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [showCallNowButton, setShowCallNowButton] = useState(false)
   const { openModal } = useLeadModal()
 
   useEffect(() => {
@@ -31,6 +33,17 @@ export function Header() {
     }
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const updateCallButtonVisibility = () => {
+      setShowCallNowButton(isWithinBusinessHours())
+    }
+
+    updateCallButtonVisibility()
+    const intervalId = window.setInterval(updateCallButtonVisibility, 60_000)
+
+    return () => window.clearInterval(intervalId)
   }, [])
 
   return (
@@ -75,20 +88,20 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button
-              asChild
-              variant="ghost"
-              className={cn(
-                "gap-2 rounded-full border shadow-none active:scale-100",
-                isScrolled
-                  ? "border-border/80 text-foreground hover:bg-muted/60"
-                  : "border-white/35 text-white hover:bg-white/12",
-              )}
-            >
-              <a href={UNIDADE_ONLINE_LINK} target="_blank" rel="noopener noreferrer">
-                Acesse seu Exame
-              </a>
-            </Button>
+            {showCallNowButton ? (
+              <Button
+                asChild
+                variant="ghost"
+                className={cn(
+                  "gap-2 rounded-full border shadow-none active:scale-100",
+                  isScrolled
+                    ? "border-border/80 text-foreground hover:bg-muted/60"
+                    : "border-white/35 text-white hover:bg-white/12",
+                )}
+              >
+                <a href={PHONE_LINK}>Ligar agora - (94) 99160-8181</a>
+              </Button>
+            ) : null}
             <Button
               variant={isScrolled ? "whatsappOutline" : "whatsappOnDark"}
               onClick={openModal}
@@ -136,15 +149,15 @@ export function Header() {
                   ))}
                 </nav>
                 <div className="mt-auto pt-8 space-y-3">
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full rounded-full border-2"
-                  >
-                    <a href={UNIDADE_ONLINE_LINK} target="_blank" rel="noopener noreferrer">
-                      Acesse seu Exame
-                    </a>
-                  </Button>
+                  {showCallNowButton ? (
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="w-full rounded-full border-2"
+                    >
+                      <a href={PHONE_LINK}>Ligar agora - (94) 99160-8181</a>
+                    </Button>
+                  ) : null}
                   <Button
                     onClick={() => {
                       setIsOpen(false)

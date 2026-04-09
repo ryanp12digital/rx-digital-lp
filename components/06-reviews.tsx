@@ -8,8 +8,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 const units = [
   {
-    name: "Unidade Novo Horizonte",
-    location: "Av. Tocantins, 611 - B",
+    name: "Unidade Novo Horizonte (disponível Tomografia)",
+    location: "Av. Tocantins, 611 - B - Novo Horizonte, Marabá - PA",
     rating: 5.0,
     totalReviews: 77,
     googleUrl: "https://maps.app.goo.gl/iPAz1Lxu121KQbFU7",
@@ -38,8 +38,8 @@ const units = [
     ],
   },
   {
-    name: "Unidade Nova Marabá",
-    location: "Shopping Verdes Mares",
+    name: "Unidade Nova Marabá - Shopping Verdes Mares",
+    location: "Folha 27 quadra especial - Nova - Nova Marabá, Marabá - PA",
     rating: 5.0,
     totalReviews: 43,
     googleUrl: "https://maps.app.goo.gl/FmDhoYT8MdvJTXi6A",
