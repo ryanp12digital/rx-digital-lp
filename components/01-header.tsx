@@ -15,6 +15,7 @@ const navLinks = [
   { href: "#servicos", label: "Serviços" },
   { href: "#dra-jessica", label: "Dra. Jéssica" },
   { href: "#unidades", label: "Unidades" },
+  { href: "#parcerias", label: "Suporte para Dentistas" },
   { href: "#faq", label: "FAQ" },
 ]
 

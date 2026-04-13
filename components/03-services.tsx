@@ -75,7 +75,7 @@ const serviceCategories = [
   },
   {
     id: "digital",
-    label: "Digital / Dentistas",
+    label: "Escaneamento intraoral",
     icon: Monitor,
     services: [
       {

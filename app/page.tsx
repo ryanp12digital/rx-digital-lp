@@ -24,6 +24,7 @@ export default function Home() {
       <Reviews />
       <About />
       <Units />
+      <PartnerSupport />
       <FAQ />
       <FinalCTA />
       <Footer />
