@@ -50,7 +50,7 @@ const serviceCategories = [
         title: "Radiografia Periapical",
         description: "Imagem detalhada de dentes específicos, raízes e osso circundante para diagnósticos precisos.",
         indications: ["Tratamento de canal", "Avaliação de raízes", "Diagnóstico de abscessos"],
-        image: "/exames_e_servicos/Radiografia Periapical (Raio x).webp",
+        image: "/exames_e_servicos/Radiografia Panorâmica (Raio x).webp",
       },
     ],
   },
