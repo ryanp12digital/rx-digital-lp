@@ -115,7 +115,12 @@ export function LeadForm({
   }
 
   const formContent = (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      id={`gtm-lead-form-${variant}`}
+      className="gtm-lead-form space-y-4"
+      data-gtm-form="lead"
+      onSubmit={handleSubmit}
+    >
       <div className="space-y-2">
         <label htmlFor={`name-${variant}`} className="text-sm font-medium text-foreground">
           Seu nome completo
