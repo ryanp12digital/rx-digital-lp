@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, createContext, useContext, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +15,8 @@ interface LeadModalContextType {
 }
 
 const LeadModalContext = createContext<LeadModalContextType | null>(null)
+const LEAD_API_ENDPOINT = "/api/lead"
+const N8N_WEBHOOK_URL = "https://n8n-webhook.axmxa0.easypanel.host/webhook/rx-digital-lp"
 
 export function useLeadModal() {
   const context = useContext(LeadModalContext)
@@ -36,6 +39,7 @@ function cleanWhatsApp(value: string): string {
 }
 
 export function LeadModalProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [name, setName] = useState("")
   const [whatsapp, setWhatsapp] = useState("")
@@ -74,6 +78,85 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     return Object.keys(newErrors).length === 0
   }
 
+  const buildLeadPayload = () => {
+    const phone = cleanWhatsApp(whatsapp)
+    return {
+      name: name.trim(),
+      whatsapp: phone,
+      whatsappFormatted: formatWhatsApp(phone),
+      consentGiven: consentChecked,
+      source: "rx-digital-lp",
+      variant: "modal",
+      pageUrl: typeof window !== "undefined" ? window.location.href : "",
+      createdAt: new Date().toISOString(),
+    }
+  }
+
+  const sendLeadToApi = async (payload: ReturnType<typeof buildLeadPayload>) => {
+    const response = await fetch(LEAD_API_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    })
+
+    if (!response.ok) {
+      throw new Error("Falha no endpoint interno de lead")
+    }
+  }
+
+  const sendLeadDirectToN8n = async (payload: ReturnType<typeof buildLeadPayload>) => {
+    const response = await fetch(N8N_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    })
+
+    if (!response.ok) {
+      throw new Error("Falha no webhook direto")
+    }
+  }
+
+  const sendLeadBeacon = (payload: ReturnType<typeof buildLeadPayload>) => {
+    if (typeof navigator === "undefined" || !navigator.sendBeacon) {
+      return false
+    }
+
+    const blob = new Blob([JSON.stringify(payload)], {
+      type: "application/json",
+    })
+
+    return navigator.sendBeacon(N8N_WEBHOOK_URL, blob)
+  }
+
+  const submitLeadWebhook = async () => {
+    const payload = buildLeadPayload()
+
+    try {
+      await sendLeadToApi(payload)
+      return
+    } catch (apiError) {
+      console.warn("Falha no /api/lead, tentando envio direto:", apiError)
+    }
+
+    try {
+      await sendLeadDirectToN8n(payload)
+      return
+    } catch (directError) {
+      console.warn("Falha no webhook direto via fetch:", directError)
+    }
+
+    const queued = sendLeadBeacon(payload)
+    if (!queued) {
+      throw new Error("Nenhuma estratégia de envio do lead funcionou")
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -89,26 +172,25 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
       }
     }
     
-    // Build WhatsApp message
-    const formattedPhone = formatWhatsApp(whatsapp)
-    const message = `Olá! Me chamo ${name.trim()}. Quero agendar um exame na RX Digital. Meu WhatsApp é ${formattedPhone}. Pode me ajudar com horários e valores?`
-    const encodedMessage = encodeURIComponent(message)
-    const whatsappUrl = `https://wa.me/5594991608181?text=${encodedMessage}`
-    
     await new Promise(resolve => setTimeout(resolve, 500))
+
+    try {
+      await submitLeadWebhook()
+    } catch (error) {
+      console.error("Erro ao enviar lead para webhook:", error)
+    }
     
-    // Track WhatsApp open event
+    // Track redirect event
     if (typeof window !== "undefined") {
       const win = window as typeof window & { dataLayer?: unknown[] }
       if (win.dataLayer) {
-        win.dataLayer.push({ event: "whatsapp_open" })
+        win.dataLayer.push({ event: "lead_redirect_thank_you" })
       }
     }
-    
-    window.open(whatsappUrl, "_blank")
-    
+
     setIsSubmitting(false)
     closeModal()
+    router.push("/obrigado")
   }
 
   const handleWhatsAppChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,7 +215,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
       {/* Modal Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 z-100 flex items-center justify-center p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeModal()
           }}
@@ -152,7 +234,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
               className="absolute top-3 right-3 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
               aria-label="Fechar"
             >
-              <X className="!size-5" strokeWidth={2} />
+              <X className="size-5!" strokeWidth={2} />
             </Button>
             
             {/* Content */}
@@ -241,13 +323,13 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
                   type="submit"
                   variant="whatsapp"
                   size="xl"
-                  className="w-full gap-2 font-semibold [&_svg]:!size-5"
+                  className="w-full gap-2 font-semibold [&_svg]:size-5!"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="!size-5 animate-spin" />
-                      Abrindo WhatsApp...
+                      <Loader2 className="size-5! animate-spin" />
+                      Enviando...
                     </>
                   ) : (
                     <>
