@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, createContext, useContext, useCallback } from "react"
-import { useRouter } from "next/navigation"
 import { X, Loader2, CircleAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -55,7 +54,6 @@ function withDdi(value: string): string {
 }
 
 export function LeadModalProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [name, setName] = useState("")
   const [whatsapp, setWhatsapp] = useState("")
@@ -211,13 +209,12 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
       const win = window as typeof window & { dataLayer?: unknown[] }
       if (win.dataLayer) {
         win.dataLayer.push({ event: "lead_submit" })
-        win.dataLayer.push({ event: "lead_redirect_thank_you" })
       }
     }
 
     setIsSubmitting(false)
     closeModal()
-    router.push("/obrigado")
+    window.location.assign("/obrigado")
   }
 
   const handleWhatsAppChange = (e: React.ChangeEvent<HTMLInputElement>) => {

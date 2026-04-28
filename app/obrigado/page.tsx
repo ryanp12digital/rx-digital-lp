@@ -10,6 +10,9 @@ export default function ObrigadoPage() {
   const [secondsLeft, setSecondsLeft] = useState(2)
 
   useEffect(() => {
+    const win = window as typeof window & { dataLayer?: unknown[] }
+    win.dataLayer?.push({ event: "lead_redirect_thank_you" })
+
     const intervalId = window.setInterval(() => {
       setSecondsLeft((prev) => (prev > 0 ? prev - 1 : 0))
     }, 1000)
