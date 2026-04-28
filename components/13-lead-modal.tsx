@@ -2,10 +2,11 @@
 
 import { useState, createContext, useContext, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { X, Loader2 } from "lucide-react"
+import { X, Loader2, CircleAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { WhatsAppIcon } from "@/components/icons"
 
 interface LeadModalContextType {
@@ -18,6 +19,9 @@ const LeadModalContext = createContext<LeadModalContextType | null>(null)
 const LEAD_API_ENDPOINT = "/api/lead"
 const N8N_WEBHOOK_URL = "https://n8n-webhook.axmxa0.easypanel.host/webhook/rx-digital-lp"
 const DEFAULT_DDI = "55"
+const FORM_ID = "Rx Digital"
+/** 32 dígitos numéricos fixos (substitua pelo ID real da integração se necessário). */
+const CODI_ID = "23215758164244868178558826641466"
 
 export function useLeadModal() {
   const context = useContext(LeadModalContext)
@@ -57,6 +61,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
   const [whatsapp, setWhatsapp] = useState("")
   const [consentChecked, setConsentChecked] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [errors, setErrors] = useState<{ name?: string; whatsapp?: string; consent?: string }>({})
 
   const openModal = useCallback(() => setIsOpen(true), [])
@@ -66,6 +71,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     setWhatsapp("")
     setConsentChecked(true)
     setErrors({})
+    setSubmitError(null)
   }, [])
 
   const validateForm = () => {
@@ -95,6 +101,8 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     const phoneWithDdi = withDdi(phoneLocal)
 
     return {
+      form_id: FORM_ID,
+      codi_id: CODI_ID,
       name: name.trim(),
       whatsapp: phoneWithDdi,
       whatsappLocal: phoneLocal,
@@ -180,27 +188,29 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     if (!validateForm()) return
     
     setIsSubmitting(true)
-    
-    // Track lead submit event
-    if (typeof window !== "undefined") {
-      const win = window as typeof window & { dataLayer?: unknown[] }
-      if (win.dataLayer) {
-        win.dataLayer.push({ event: "lead_submit" })
-      }
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 500))
+    setSubmitError(null)
 
     try {
       await submitLeadWebhook()
     } catch (error) {
       console.error("Erro ao enviar lead para webhook:", error)
+      setSubmitError(
+        "Não foi possível enviar seu contato. Verifique sua conexão e tente novamente em instantes.",
+      )
+      if (typeof window !== "undefined") {
+        const win = window as typeof window & { dataLayer?: unknown[] }
+        if (win.dataLayer) {
+          win.dataLayer.push({ event: "lead_submit_failed" })
+        }
+      }
+      setIsSubmitting(false)
+      return
     }
-    
-    // Track redirect event
+
     if (typeof window !== "undefined") {
       const win = window as typeof window & { dataLayer?: unknown[] }
       if (win.dataLayer) {
+        win.dataLayer.push({ event: "lead_submit" })
         win.dataLayer.push({ event: "lead_redirect_thank_you" })
       }
     }
@@ -271,6 +281,13 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
                 data-gtm-form="lead"
                 onSubmit={handleSubmit}
               >
+                {submitError && (
+                  <Alert variant="destructive" className="text-left">
+                    <CircleAlert />
+                    <AlertTitle>Não enviado</AlertTitle>
+                    <AlertDescription>{submitError}</AlertDescription>
+                  </Alert>
+                )}
                 <div className="space-y-2">
                   <label htmlFor="modal-name" className="text-sm font-medium text-foreground">
                     Seu nome completo

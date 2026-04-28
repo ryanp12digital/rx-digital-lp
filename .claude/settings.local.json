@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__8f3c3af5-5995-496c-ac15-4e58c84da92e__accounts_list",
+      "mcp__8f3c3af5-5995-496c-ac15-4e58c84da92e__set_active_account",
+      "mcp__8f3c3af5-5995-496c-ac15-4e58c84da92e__workers_list",
+      "Bash(pnpm add *)",
+      "Bash(npx -y pnpm@10.11.1 add -D @opennextjs/cloudflare@^1.19.4 wrangler@^4)",
+      "PowerShell(gh --version 2>&1)",
+      "PowerShell(gh auth status 2>&1)",
+      "Bash(npx opennextjs-cloudflare *)",
+      "Bash(mkdir -p \"/c/Users/rya_p/.claude/skills/cloudflare-nextjs-deploy\")",
+      "Read(//c/Users/rya_p/.claude/**)",
+      "Bash(npx pnpm@10.11.1 run build)"
+    ]
+  }
+}
