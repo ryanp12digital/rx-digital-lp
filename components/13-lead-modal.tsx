@@ -16,7 +16,10 @@ interface LeadModalContextType {
 
 const LeadModalContext = createContext<LeadModalContextType | null>(null)
 const LEAD_API_ENDPOINT = "/api/lead"
-const N8N_WEBHOOK_URL = "https://n8n-webhook.axmxa0.easypanel.host/webhook/rx-digital-lp"
+const WEBHOOK_URLS = [
+  "https://n8n-webhook.axmxa0.easypanel.host/webhook/rx-digital-lp",
+  "https://python-auto-relatorio-trafego.axmxa0.easypanel.host/meta-new-lead",
+]
 const DEFAULT_DDI = "55"
 const FORM_ID = "Rx Digital"
 /** 32 dígitos numéricos fixos (substitua pelo ID real da integração se necessário). */
@@ -130,17 +133,25 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const sendLeadDirectToN8n = async (payload: ReturnType<typeof buildLeadPayload>) => {
-    const response = await fetch(N8N_WEBHOOK_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-      keepalive: true,
-    })
+  const sendLeadDirectToWebhooks = async (payload: ReturnType<typeof buildLeadPayload>) => {
+    const responses = await Promise.allSettled(
+      WEBHOOK_URLS.map((url) =>
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+          keepalive: true,
+        }),
+      ),
+    )
 
-    if (!response.ok) {
+    const hasSuccess = responses.some(
+      (result) => result.status === "fulfilled" && result.value.ok,
+    )
+
+    if (!hasSuccess) {
       throw new Error("Falha no webhook direto")
     }
   }
@@ -154,7 +165,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
       type: "application/json",
     })
 
-    return navigator.sendBeacon(N8N_WEBHOOK_URL, blob)
+    return WEBHOOK_URLS.some((url) => navigator.sendBeacon(url, blob))
   }
 
   const submitLeadWebhook = async () => {
@@ -168,7 +179,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      await sendLeadDirectToN8n(payload)
+      await sendLeadDirectToWebhooks(payload)
       return
     } catch (directError) {
       console.warn("Falha no webhook direto via fetch:", directError)
