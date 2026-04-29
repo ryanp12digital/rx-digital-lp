@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, createContext, useContext, useCallback } from "react"
+import { useState, createContext, useContext, useCallback, useEffect } from "react"
 import { X, Loader2, CircleAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +24,17 @@ const DEFAULT_DDI = "55"
 const FORM_ID = "Rx Digital"
 /** 32 dígitos numéricos fixos (substitua pelo ID real da integração se necessário). */
 const CODI_ID = "23215758164244868178558826641466"
+const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"] as const
+
+type UtmData = Record<(typeof UTM_KEYS)[number], string>
+
+const EMPTY_UTMS: UtmData = {
+  utm_source: "",
+  utm_medium: "",
+  utm_campaign: "",
+  utm_term: "",
+  utm_content: "",
+}
 
 export function useLeadModal() {
   const context = useContext(LeadModalContext)
@@ -63,6 +74,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
   const [consentChecked, setConsentChecked] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [utms, setUtms] = useState<UtmData>(EMPTY_UTMS)
   const [errors, setErrors] = useState<{ name?: string; whatsapp?: string; consent?: string }>({})
 
   const openModal = useCallback(() => setIsOpen(true), [])
@@ -73,6 +85,27 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     setConsentChecked(true)
     setErrors({})
     setSubmitError(null)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const params = new URLSearchParams(window.location.search)
+    const nextUtms: UtmData = { ...EMPTY_UTMS }
+
+    UTM_KEYS.forEach((key) => {
+      const fromUrl = params.get(key)?.trim() ?? ""
+      if (fromUrl) {
+        nextUtms[key] = fromUrl
+        window.localStorage.setItem(`lead_${key}`, fromUrl)
+        return
+      }
+
+      const fromStorage = window.localStorage.getItem(`lead_${key}`)?.trim() ?? ""
+      nextUtms[key] = fromStorage
+    })
+
+    setUtms(nextUtms)
   }, [])
 
   const validateForm = () => {
@@ -113,6 +146,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
       consentGiven: consentChecked,
       source: "rx-digital-lp",
       variant: "modal",
+      ...utms,
       pageUrl: typeof window !== "undefined" ? window.location.href : "",
       createdAt: new Date().toISOString(),
     }
@@ -289,6 +323,11 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
                 data-gtm-form="lead"
                 onSubmit={handleSubmit}
               >
+                <input type="hidden" name="utm_source" value={utms.utm_source} readOnly />
+                <input type="hidden" name="utm_medium" value={utms.utm_medium} readOnly />
+                <input type="hidden" name="utm_campaign" value={utms.utm_campaign} readOnly />
+                <input type="hidden" name="utm_term" value={utms.utm_term} readOnly />
+                <input type="hidden" name="utm_content" value={utms.utm_content} readOnly />
                 {submitError && (
                   <Alert variant="destructive" className="text-left">
                     <CircleAlert />
